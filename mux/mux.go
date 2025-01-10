@@ -7,23 +7,23 @@ import (
 )
 
 type server struct {
-	endpointsGET  map[string]func(http.ResponseWriter, *http.Request)
-	endpointsPOST map[string]func(http.ResponseWriter, *http.Request)
+	endpointsGET  map[string][]http.HandlerFunc
+	endpointsPOST map[string][]http.HandlerFunc
 }
 
 func NewServer() *server {
 	return &server{
-		endpointsGET:  make(map[string]func(http.ResponseWriter, *http.Request)),
-		endpointsPOST: make(map[string]func(http.ResponseWriter, *http.Request)),
+		endpointsGET:  make(map[string][]http.HandlerFunc),
+		endpointsPOST: make(map[string][]http.HandlerFunc),
 	}
 }
 
-func (s *server) WithEndpoint(path, httpMethod string, handlerFunc func(http.ResponseWriter, *http.Request)) *server {
+func (s *server) WithEndpoint(path, httpMethod string, handlerFuncs ...http.HandlerFunc) *server {
 	switch httpMethod {
 	case http.MethodGet:
-		s.endpointsGET[path] = handlerFunc
+		s.endpointsGET[path] = handlerFuncs
 	case http.MethodPost:
-		s.endpointsPOST[path] = handlerFunc
+		s.endpointsPOST[path] = handlerFuncs
 	default:
 		log.Printf("Don't yet handle the HTTP Method '%s'", httpMethod)
 	}
@@ -44,19 +44,20 @@ func (s *server) HandlerNames() []string {
 func (s *server) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	reqPath := req.URL.Path
 	log.Printf("Received request for '%s'", reqPath)
-	var endpoint func(http.ResponseWriter, *http.Request)
+	var endpoints []http.HandlerFunc
 	var OK bool
 	switch req.Method {
 	case http.MethodGet:
-		endpoint, OK = s.endpointsGET[reqPath]
+		endpoints, OK = s.endpointsGET[reqPath]
 	case http.MethodPost:
-		endpoint, OK = s.endpointsPOST[reqPath]
+		endpoints, OK = s.endpointsPOST[reqPath]
 	}
 	if !OK {
 		log.Printf("don't have a handler for %s", reqPath)
 		return
 	}
-
-	endpoint(rw, req)
+	for _, endpoint := range endpoints {
+		endpoint(rw, req)
+	}
 	log.Printf("Handled request for '%s'", reqPath)
 }

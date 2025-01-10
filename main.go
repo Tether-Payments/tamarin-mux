@@ -14,7 +14,8 @@ var port int
 func main() {
 	server := mux.NewServer().
 		WithEndpoint("/ping", http.MethodGet, mux.PingGET).
-		WithEndpoint("/ping", http.MethodPost, mux.PingPOST)
+		WithEndpoint("/ping", http.MethodPost, mux.PingPOST).
+		WithEndpoint("/fancyping", http.MethodPost, mux.NewEndpoint().WithHandlers(mux.MustHaveHelloGoodbyeHeader, mux.PingPOST).HandleFunc)
 
 	addr := fmt.Sprintf("0.0.0.0:%d", port)
 	log.Printf("Now listening on %s with handlers for", addr)
