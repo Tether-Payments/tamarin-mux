@@ -129,18 +129,12 @@ func (h *handler) pathMatchesPattern(path, httpMethod string) []http.HandlerFunc
 	}
 	for candidatePath, handlers := range candidateFuncs {
 		rp := variablePrefix(candidatePath)
-		// log.Printf("prefix : %s", rp)
-		// log.Printf("Path len : %d Prefix len %d", len(path), len(rp))
 		if len(path) < len(rp) {
 			continue
 		}
-		// log.Printf("path[:%d] : %s", len(rp), path[:len(rp)])
 		if strings.EqualFold(rp, path[:len(rp)]) {
-			// log.Println("potential match")
 			candidateSplit := strings.Split(candidatePath, "/")
 			inputSplit := strings.Split(path, "/")
-			// log.Printf("Candidate :%v", candidateSplit)
-			// log.Printf("Input     :%v", inputSplit)
 			if len(candidateSplit) != len(inputSplit) {
 				continue
 			}
@@ -151,7 +145,6 @@ func (h *handler) pathMatchesPattern(path, httpMethod string) []http.HandlerFunc
 				}
 				allMatched = allMatched && strings.EqualFold(element, inputSplit[idx])
 			}
-			// log.Printf("All matched :%t", allMatched)
 			if allMatched {
 				return handlers
 			}

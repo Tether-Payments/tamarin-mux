@@ -44,7 +44,6 @@ func MustHaveHelloGoodbyeHeader(rw http.ResponseWriter, req *http.Request) *tama
 	}
 	log.Println("[MiddleWare] Passed third Check : 'goodbye' value at 'Hello' key")
 
-	fmt.Println("[MiddleWare] did not fail")
-	rw.WriteHeader(http.StatusOK)
+	log.Println("[MiddleWare] Passed all checks")
 	return nil
 }
