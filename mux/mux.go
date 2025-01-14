@@ -18,7 +18,20 @@ func NewServer() *server {
 	}
 }
 
-func (s *server) WithEndpoint(path, httpMethod string, handlerFuncs ...http.HandlerFunc) *server {
+func (s *server) WithEndpoint(e *Endpoint) *server {
+	switch e.method {
+	case http.MethodGet:
+		s.endpointsGET[e.path] = []http.HandlerFunc{e.Handle}
+	case http.MethodPost:
+		s.endpointsPOST[e.path] = []http.HandlerFunc{e.Handle}
+	default:
+		log.Printf("Don't yet handle the HTTP Method '%s'", e.method)
+	}
+
+	return s
+}
+
+func (s *server) WithHandleFuncs(path, httpMethod string, handlerFuncs ...http.HandlerFunc) *server {
 	switch httpMethod {
 	case http.MethodGet:
 		s.endpointsGET[path] = handlerFuncs

@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/Tether-Payments/tamarin-mux/implementation"
 	"github.com/Tether-Payments/tamarin-mux/mux"
 )
 
@@ -13,9 +14,9 @@ var port int
 
 func main() {
 	server := mux.NewServer().
-		WithEndpoint("/ping", http.MethodGet, mux.PingGET).
-		WithEndpoint("/ping", http.MethodPost, mux.PingPOST).
-		WithEndpoint("/fancyping", http.MethodPost, mux.NewEndpoint().WithHandlers(mux.MustHaveHelloGoodbyeHeader, mux.PingPOST).HandleFunc)
+		WithEndpoint(mux.NewEndpoint("/fancyping", http.MethodPost).WithHandlers(implementation.MustHaveHelloGoodbyeHeader, implementation.EndpointPingPOST)).
+		WithHandleFuncs("/ping", http.MethodGet, implementation.PingGET).
+		WithHandleFuncs("/ping", http.MethodPost, implementation.PingPOST)
 
 	addr := fmt.Sprintf("0.0.0.0:%d", port)
 	log.Printf("Now listening on %s with handlers for", addr)
