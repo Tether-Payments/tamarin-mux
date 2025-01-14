@@ -1,7 +1,6 @@
-package mux
+package tamarin
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 )
@@ -28,8 +27,8 @@ func (e *Endpoint) Handle(rw http.ResponseWriter, req *http.Request) {
 		err := f(rw, req)
 		if err != nil {
 			rw.WriteHeader(err.returnCode)
-			rw.Write([]byte(fmt.Sprintf("Bad : %v", err.returnMessage)))
-			log.Printf("Exiting due to error %v", err.error)
+			rw.Write([]byte(err.returnMessage))
+			log.Printf("Stopping sequence for '%s' due to error : %v", e.path, err.error)
 			break
 		}
 	}
