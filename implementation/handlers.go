@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/Tether-Payments/tamarin-mux/tamarin"
 )
@@ -15,6 +16,20 @@ func PingGET(rw http.ResponseWriter, req *http.Request) {
 
 func PingPOST(rw http.ResponseWriter, req *http.Request) {
 	rw.Write([]byte("Pong (POST)"))
+}
+
+type URLElementsResponse struct {
+	Elements map[int]string
+}
+
+func PrintURLWithElements(rw http.ResponseWriter, req *http.Request) *tamarin.EndpointError {
+	split := strings.Split(req.URL.Path, "/")
+	elements := make(map[int]string, len(split))
+	for i, val := range split {
+		elements[i] = val
+	}
+	tamarin.SuceedWithJSONStatus(URLElementsResponse{Elements: elements}, rw)
+	return nil
 }
 
 func EndpointPingPOST(rw http.ResponseWriter, req *http.Request) *tamarin.EndpointError {
