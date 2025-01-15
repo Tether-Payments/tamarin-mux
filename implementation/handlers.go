@@ -53,3 +53,18 @@ func ShowBody(rw http.ResponseWriter, req *http.Request) *tamarin.EndpointError 
 	tamarin.SuceedWithJSONStatus(showBodyResponse{YourBody: string(bodyBytes)}, rw)
 	return nil
 }
+
+func StaticSiteHandler(rw http.ResponseWriter, req *http.Request) *tamarin.EndpointError {
+	log.Printf("[Endpoint StaticSiteHandler] Using static handler for '%s'", req.URL.Path)
+	fileSystemPath := mapURLPrefixToFileSystem(req.URL.Path, "/content/", "./static/")
+	log.Printf("[Endpoint StaticSiteHandler] FileSystemPath '%s'", fileSystemPath)
+	http.ServeFile(rw, req, fileSystemPath)
+	return nil
+}
+
+func mapURLPrefixToFileSystem(fullPath, urlPrefix, fileSystemPrefix string) string {
+	if len(urlPrefix) > len(fullPath) {
+		return fullPath
+	}
+	return fileSystemPrefix + fullPath[len(urlPrefix):]
+}

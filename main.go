@@ -12,8 +12,6 @@ import (
 
 var port int
 
-const uuidRegex = `^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$`
-
 func main() {
 	handler := tamarin.NewHandler().
 		WithEndpoint(tamarin.NewEndpoint("/fancyping", http.MethodPost).WithHandlers(implementation.MustHaveHelloGoodbyeHeader, implementation.EndpointPingPOST)).
@@ -22,7 +20,8 @@ func main() {
 		WithEndpoint(tamarin.NewEndpoint("/wallet/{}", http.MethodGet).WithHandlers(implementation.MustHaveHelloGoodbyeHeader, implementation.PrintURLWithElements)).
 		WithEndpoint(tamarin.NewEndpoint("/wallet/{}/something/{}/else", http.MethodGet).WithHandlers(implementation.PrintURLWithElements)).
 		WithEndpoint(tamarin.NewEndpoint("/failjson", http.MethodPost).WithHandlers(implementation.FailIfNoBody, implementation.ShowBody)).
-		WithStaticDir("./static")
+		WithEndpoint(tamarin.NewEndpoint("/content/{*}", http.MethodPost).WithHandlers(implementation.MustHaveHelloGoodbyeHeader, implementation.StaticSiteHandler)).
+		WithEndpoint(tamarin.NewEndpoint("/content/{*}", http.MethodGet).WithHandlers(implementation.StaticSiteHandler))
 
 	addr := fmt.Sprintf("0.0.0.0:%d", port)
 
