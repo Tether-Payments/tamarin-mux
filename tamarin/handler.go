@@ -8,6 +8,7 @@ import (
 )
 
 type handler struct {
+	staticPaths          []string // TODO : make this a map instead of slice to disconnect actual filesystem from URLS
 	handleFuncsGET       map[string][]http.HandlerFunc
 	handleFuncsPOST      map[string][]http.HandlerFunc
 	variableHandlersGET  map[string][]http.HandlerFunc
@@ -44,8 +45,8 @@ func (s *handler) WithEndpoint(e *Endpoint) *handler {
 	return s
 }
 
-// TODO : Handle Static Pages (http.FileServer?)
 func (s *handler) WithStaticDir(path string) *handler {
+	s.staticPaths = append(s.staticPaths, path)
 	return s
 }
 
@@ -94,7 +95,13 @@ func (s *handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	var OK bool
 	switch req.Method {
 	case http.MethodGet:
-		endpoints, OK = s.handleFuncsGET[reqPath]
+		if s.pathIsStatic(reqPath) {
+			log.Printf("Using static handler for '%s' ", reqPath)
+			endpoints = append(endpoints, s.defaultStaticFunc)
+			OK = true
+		} else {
+			endpoints, OK = s.handleFuncsGET[reqPath]
+		}
 	case http.MethodPost:
 		endpoints, OK = s.handleFuncsPOST[reqPath]
 	}
@@ -111,6 +118,47 @@ func (s *handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	log.Printf("Handled request for '%s'", reqPath)
 }
 
+func (h *handler) defaultStaticFunc(rw http.ResponseWriter, req *http.Request) {
+	log.Printf("[Default Static] Using static handler for '%s'", req.URL.Path)
+	staticPath, filePath := h.pathComponents(req.URL.Path)
+	log.Printf("[Default Static] staticpath : %s filepath : %s", staticPath, filePath)
+	http.ServeFile(rw, req, staticPath+filePath)
+}
+
+func (h *handler) pathComponents(path string) (string, string) {
+	staticPortion := ""
+	minusRoot := ""
+
+	for _, staticPath := range h.staticPaths {
+		trimmed := trimToFirstSlash(staticPath)
+		if len(path) >= len(trimmed) && path[:len(trimmed)] == trimmed {
+			staticPortion = staticPath
+			minusRoot = path[len(trimmed):]
+		}
+	}
+	return staticPortion, minusRoot
+}
+
+func trimToFirstSlash(path string) string {
+	idx := strings.Index(path, "/")
+	if idx < 0 {
+		return path
+	}
+	return path[idx:]
+}
+
+func (s *handler) pathIsStatic(path string) bool {
+	for _, candidate := range s.staticPaths {
+		trimmed := trimToFirstSlash(candidate)
+		log.Printf("[Path is Static?] Does %s match %s ? ", trimmed, path)
+		if len(path) >= len(trimmed) && path[:len(trimmed)] == trimmed {
+			log.Printf("[Path is Static?] %s matches %s", trimmed, path)
+			return true
+		}
+	}
+	return false
+}
+
 func pathIsVariable(path string) bool {
 	return strings.Contains(path, "{}")
 }
@@ -119,20 +167,18 @@ func (h *handler) pathMatchesPattern(path, httpMethod string) []http.HandlerFunc
 	var candidateFuncs map[string][]http.HandlerFunc
 	switch httpMethod {
 	case http.MethodGet:
-		log.Printf("potential is GET")
 		candidateFuncs = h.variableHandlersGET
 	case http.MethodPost:
-		log.Printf("potential is POST")
 		candidateFuncs = h.variableHandlersPOST
 	default:
 		return nil
 	}
 	for candidatePath, handlers := range candidateFuncs {
-		rp := variablePrefix(candidatePath)
-		if len(path) < len(rp) {
+		candidatePrefix := variablePrefix(candidatePath)
+		if len(path) < len(candidatePrefix) {
 			continue
 		}
-		if strings.EqualFold(rp, path[:len(rp)]) {
+		if strings.EqualFold(candidatePrefix, path[:len(candidatePrefix)]) {
 			candidateSplit := strings.Split(candidatePath, "/")
 			inputSplit := strings.Split(path, "/")
 			if len(candidateSplit) != len(inputSplit) {

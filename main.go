@@ -20,7 +20,9 @@ func main() {
 		WithHandleFuncs("/ping", http.MethodGet, implementation.PingGET).
 		WithHandleFuncs("/ping", http.MethodPost, implementation.PingPOST).
 		WithEndpoint(tamarin.NewEndpoint("/wallet/{}", http.MethodGet).WithHandlers(implementation.MustHaveHelloGoodbyeHeader, implementation.PrintURLWithElements)).
-		WithEndpoint(tamarin.NewEndpoint("/failjson", http.MethodPost).WithHandlers(implementation.FailIfNoBody, implementation.ShowBody))
+		WithEndpoint(tamarin.NewEndpoint("/wallet/{}/something/{}/else", http.MethodGet).WithHandlers(implementation.PrintURLWithElements)).
+		WithEndpoint(tamarin.NewEndpoint("/failjson", http.MethodPost).WithHandlers(implementation.FailIfNoBody, implementation.ShowBody)).
+		WithStaticDir("./static")
 
 	addr := fmt.Sprintf("0.0.0.0:%d", port)
 
