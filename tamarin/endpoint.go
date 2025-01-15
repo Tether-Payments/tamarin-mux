@@ -29,6 +29,7 @@ func (e *Endpoint) Handle(rw http.ResponseWriter, req *http.Request) {
 			rw.WriteHeader(err.returnCode)
 			rw.Write([]byte(err.returnMessage))
 			log.Printf("Stopping sequence for '%s' due to error : %v", e.path, err.error)
+			log.Printf("User will see Error Code : %d / Message : %s", err.returnCode, err.returnMessage)
 			break
 		}
 	}

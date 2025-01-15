@@ -163,7 +163,7 @@ func (h *handler) getVariableHandlerFuncsForPattern(path, httpMethod string) []h
 			}
 			allMatched := true
 			for idx, element := range candidateSplit {
-				if element == "{}" {
+				if element == VARIABLE_INDICATOR {
 					continue
 				}
 				allMatched = allMatched && strings.EqualFold(element, inputSplit[idx])
@@ -177,7 +177,6 @@ func (h *handler) getVariableHandlerFuncsForPattern(path, httpMethod string) []h
 }
 
 func (h *handler) getStaticHandlerFuncsForPattern(path, httpMethod string) []http.HandlerFunc {
-	log.Printf("[Get HandlerFuncs for Pattern (Static)] Input Path %s", path)
 	var candidateFuncs map[string][]http.HandlerFunc
 	switch httpMethod {
 	case http.MethodGet:
@@ -194,7 +193,6 @@ func (h *handler) getStaticHandlerFuncsForPattern(path, httpMethod string) []htt
 			continue
 		}
 		if strings.EqualFold(candidatePrefix, path[:len(candidatePrefix)]) {
-			log.Printf("[Get HandlerFuncs for Pattern (Static)] prefix '%s' matches the start of Input Path %s", candidatePrefix, path)
 			return handlers
 		}
 	}
