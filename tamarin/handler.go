@@ -22,6 +22,8 @@ type handler struct {
 	staticHandlersPOST   map[string][]http.HandlerFunc
 }
 
+// NewHandler returns a fresh Handler / Mux.
+// The verbose parameter controls log output
 func NewHandler(verbose bool) *handler {
 	return &handler{
 		verbose:              verbose,
@@ -34,7 +36,9 @@ func NewHandler(verbose bool) *handler {
 	}
 }
 
-func (s *handler) WithEndpoint(e *Endpoint) *handler {
+// WithEndpoint adds an Endpoint (HandlerFunc wrapper) to the list of HandlerFuncs to be
+// executed for a given path and method
+func (s *handler) WithEndpoint(e *endpoint) *handler {
 	switch e.method {
 	case http.MethodGet:
 		if pathIsVariable(e.path) {
@@ -59,6 +63,8 @@ func (s *handler) WithEndpoint(e *Endpoint) *handler {
 	return s
 }
 
+// WithEndpoint adds HandlerFuncs to the list of HandlerFuncs to be
+// executed for a given path and method
 func (s *handler) WithHandleFuncs(path, httpMethod string, handlerFuncs ...http.HandlerFunc) *handler {
 	switch httpMethod {
 	case http.MethodGet:
@@ -84,29 +90,32 @@ func (s *handler) WithHandleFuncs(path, httpMethod string, handlerFuncs ...http.
 	return s
 }
 
+// HandlerNames returns the list of all items the Handler is handling
+// Useful for startup log output
 func (s *handler) HandlerNames() []string {
 	names := []string{}
 	for key := range s.handleFuncsGET {
-		names = append(names, fmt.Sprintf("[%s] -> %s", http.MethodGet, key))
+		names = append(names, fmt.Sprintf("[%s]                                 -> %s", http.MethodGet, key))
 	}
 	for key := range s.variableHandlersGET {
-		names = append(names, fmt.Sprintf("[%s] -> %s", http.MethodGet, key))
+		names = append(names, fmt.Sprintf("[%s] [URL contains variable]         -> %s", http.MethodGet, key))
 	}
 	for key := range s.staticHandlersGET {
-		names = append(names, fmt.Sprintf("[%s] -> %s", http.MethodGet, key))
+		names = append(names, fmt.Sprintf("[%s] [URL refers to static content]  -> %s ", http.MethodGet, key))
 	}
 	for key := range s.handleFuncsPOST {
-		names = append(names, fmt.Sprintf("[%s] -> %s", http.MethodPost, key))
+		names = append(names, fmt.Sprintf("[%s]                                -> %s", http.MethodPost, key))
 	}
 	for key := range s.variableHandlersPOST {
-		names = append(names, fmt.Sprintf("[%s] -> %s", http.MethodPost, key))
+		names = append(names, fmt.Sprintf("[%s] [URL contains variable]        -> %s ", http.MethodPost, key))
 	}
 	for key := range s.staticHandlersPOST {
-		names = append(names, fmt.Sprintf("[%s] -> %s", http.MethodPost, key))
+		names = append(names, fmt.Sprintf("[%s] [URL refers to static content] -> %s ", http.MethodPost, key))
 	}
 	return names
 }
 
+// ServeHTTP fulfills the http.Handler interface and is used along with http.ListenAndServe
 func (s *handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	reqPath := req.URL.Path
 	if s.verbose {

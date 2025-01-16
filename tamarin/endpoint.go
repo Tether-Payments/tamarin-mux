@@ -5,24 +5,30 @@ import (
 	"net/http"
 )
 
+// EndpointHandlerFunc is a wrapper for http.HandlerFunc's that returns flavored Errors
 type EndpointHandlerFunc func(http.ResponseWriter, *http.Request) *EndpointError
 
-type Endpoint struct {
+type endpoint struct {
 	path     string
 	method   string
 	sequence []EndpointHandlerFunc
 }
 
-func NewEndpoint(path, httpMethod string) *Endpoint {
-	return &Endpoint{sequence: []EndpointHandlerFunc{}, path: path, method: httpMethod}
+// NewEndpoint returns an instantiated Endpoint
+func NewEndpoint(path, httpMethod string) *endpoint {
+	return &endpoint{sequence: []EndpointHandlerFunc{}, path: path, method: httpMethod}
 }
 
-func (e *Endpoint) WithHandlers(eFunc ...EndpointHandlerFunc) *Endpoint {
+// WithHandlers adds EndpointHandlerFunc's to the sequence of HandlerFuncs to be
+// executed by this Endpoint
+func (e *endpoint) WithHandlers(eFunc ...EndpointHandlerFunc) *endpoint {
 	e.sequence = append(e.sequence, eFunc...)
 	return e
 }
 
-func (e *Endpoint) Handle(rw http.ResponseWriter, req *http.Request) {
+// Handle satisfies the http.HandlerFunc interface but executes multiple wrapped
+// HandlerFuncs in sequence, stopping if there is an error
+func (e *endpoint) Handle(rw http.ResponseWriter, req *http.Request) {
 	for _, f := range e.sequence {
 		err := f(rw, req)
 		if err != nil {
