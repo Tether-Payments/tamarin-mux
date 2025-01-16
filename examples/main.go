@@ -6,14 +6,14 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/Tether-Payments/tamarin-mux/implementation"
+	"github.com/Tether-Payments/tamarin-mux/examples/implementation"
 	"github.com/Tether-Payments/tamarin-mux/tamarin"
 )
 
 var port int
 
 func main() {
-	handler := tamarin.NewHandler().
+	handler := tamarin.NewHandler(true).
 		WithEndpoint(tamarin.NewEndpoint("/fancyping", http.MethodPost).WithHandlers(implementation.MustHaveHelloGoodbyeHeader, implementation.EndpointPingPOST)).
 		WithHandleFuncs("/ping", http.MethodGet, implementation.PingGET).
 		WithHandleFuncs("/ping", http.MethodPost, implementation.PingPOST).

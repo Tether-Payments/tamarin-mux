@@ -13,6 +13,7 @@ const (
 )
 
 type handler struct {
+	verbose              bool
 	handleFuncsGET       map[string][]http.HandlerFunc
 	handleFuncsPOST      map[string][]http.HandlerFunc
 	variableHandlersGET  map[string][]http.HandlerFunc
@@ -21,8 +22,9 @@ type handler struct {
 	staticHandlersPOST   map[string][]http.HandlerFunc
 }
 
-func NewHandler() *handler {
+func NewHandler(verbose bool) *handler {
 	return &handler{
+		verbose:              verbose,
 		handleFuncsGET:       make(map[string][]http.HandlerFunc),
 		handleFuncsPOST:      make(map[string][]http.HandlerFunc),
 		variableHandlersGET:  make(map[string][]http.HandlerFunc),
@@ -121,7 +123,9 @@ func (s *handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		if endpoints == nil {
 			endpoints = s.getStaticHandlerFuncsForPattern(req.URL.Path, req.Method)
 			if endpoints == nil {
-				log.Printf("don't have a handler for %s", reqPath)
+				if s.verbose {
+					log.Printf("don't have a handler for %s", reqPath)
+				}
 				return
 			}
 		}
@@ -129,7 +133,9 @@ func (s *handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	for _, endpoint := range endpoints {
 		endpoint(rw, req)
 	}
-	log.Printf("Handled request for '%s'", reqPath)
+	if s.verbose {
+		log.Printf("Handled request for '%s'", reqPath)
+	}
 }
 
 func pathIsStatic(path string) bool {
