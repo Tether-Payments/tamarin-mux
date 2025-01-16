@@ -109,7 +109,9 @@ func (s *handler) HandlerNames() []string {
 
 func (s *handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	reqPath := req.URL.Path
-	log.Printf("Received request for '%s'", reqPath)
+	if s.verbose {
+		log.Printf("Received request for '%s'", reqPath)
+	}
 	var endpoints []http.HandlerFunc
 	var OK bool
 	switch req.Method {
@@ -192,7 +194,6 @@ func (h *handler) getStaticHandlerFuncsForPattern(path, httpMethod string) []htt
 	default:
 		return nil
 	}
-	fmt.Println(len(candidateFuncs))
 	for candidatePath, handlers := range candidateFuncs {
 		candidatePrefix := staticPrefix(candidatePath)
 		if len(path) < len(candidatePrefix) {
