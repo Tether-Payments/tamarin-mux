@@ -124,15 +124,12 @@ func TestHandlerNames(t *testing.T) {
 	}
 }
 
-var (
-	testLastMessage string
-	testLastCode    int
-)
-
 func TestServeHTTP(t *testing.T) {
+	testLastMessage = ""
+	testLastCode = 0
 	h := NewHandler(true)
 	h.ServeHTTP(nil, nil)
-	trw := TestingResponseWriter{}
+	trw := testingResponseWriter{}
 	h.ServeHTTP(trw, &http.Request{})
 	if testLastMessage != "" && testLastCode != 0 {
 		t.Fail()
@@ -189,7 +186,7 @@ func TestGetVariableHandlerFuncsForPattern(t *testing.T) {
 		t.Fail()
 	}
 	h = NewHandler(true).WithHandleFuncs("/test/{}/something/else/{}/", http.MethodGet, testFunc).WithHandleFuncs("/test/{}", http.MethodGet, testFunc)
-	h.ServeHTTP(TestingResponseWriter{}, &http.Request{Method: http.MethodGet, URL: &url.URL{Path: "/test/anotherword"}})
+	h.ServeHTTP(testingResponseWriter{}, &http.Request{Method: http.MethodGet, URL: &url.URL{Path: "/test/anotherword"}})
 	if testLastMessage != goodMessage || testLastCode != goodStatus {
 		t.Fail()
 	}
@@ -215,7 +212,7 @@ func TestGetStaticVariableHandlerFuncsForPattern(t *testing.T) {
 		t.Fail()
 	}
 	h = NewHandler(true).WithHandleFuncs("/test/something/else/{*}/", http.MethodGet, testFunc).WithHandleFuncs("/test/{*}", http.MethodGet, testFunc)
-	h.ServeHTTP(TestingResponseWriter{}, &http.Request{Method: http.MethodGet, URL: &url.URL{Path: "/test/myfile.json"}})
+	h.ServeHTTP(testingResponseWriter{}, &http.Request{Method: http.MethodGet, URL: &url.URL{Path: "/test/myfile.json"}})
 	if testLastMessage != goodMessage || testLastCode != goodStatus {
 		t.Fail()
 	}
@@ -250,17 +247,22 @@ func TestVariablePrefix(t *testing.T) {
 	}
 }
 
-type TestingResponseWriter struct{}
+var (
+	testLastMessage string
+	testLastCode    int
+)
 
-func (t TestingResponseWriter) Header() http.Header {
+type testingResponseWriter struct{}
+
+func (t testingResponseWriter) Header() http.Header {
 	return http.Header{}
 }
 
-func (t TestingResponseWriter) Write(message []byte) (int, error) {
+func (t testingResponseWriter) Write(message []byte) (int, error) {
 	testLastMessage = string(message)
 	return len(message), nil
 }
 
-func (t TestingResponseWriter) WriteHeader(code int) {
+func (t testingResponseWriter) WriteHeader(code int) {
 	testLastCode = code
 }

@@ -30,9 +30,12 @@ func FailWithJSONStatus(code int, v any, err error) *EndpointError {
 
 // SuceedWithJSONStatus returns a 200 and JSON-marshalled response body
 func SuceedWithJSONStatus(responseBody any, rw http.ResponseWriter) *EndpointError {
+	if responseBody == nil || rw == nil {
+		return FailWithErrorMessage(http.StatusInternalServerError, "Internal Server Error", fmt.Errorf("responseBody or Response Body was nil"))
+	}
 	jsonBytes, err := json.Marshal(responseBody)
 	if err != nil {
-		FailWithErrorMessage(http.StatusInternalServerError, "Internal Server Error", fmt.Errorf("unable to marshal response body : %v", err))
+		return FailWithErrorMessage(http.StatusInternalServerError, "Internal Server Error", fmt.Errorf("unable to marshal response body : %v", err))
 	}
 	rw.WriteHeader(http.StatusOK)
 	rw.Write(jsonBytes)
