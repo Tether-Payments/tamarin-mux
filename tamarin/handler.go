@@ -39,6 +39,9 @@ func NewHandler(verbose bool) *handler {
 // WithEndpoint adds an Endpoint (HandlerFunc wrapper) to the list of HandlerFuncs to be
 // executed for a given path and method
 func (s *handler) WithEndpoint(e *endpoint) *handler {
+	if e == nil {
+		return s
+	}
 	switch e.method {
 	case http.MethodGet:
 		if pathIsVariable(e.path) {
@@ -83,7 +86,6 @@ func (s *handler) WithHandleFuncs(path, httpMethod string, handlerFuncs ...http.
 		} else {
 			s.handleFuncsPOST[path] = handlerFuncs
 		}
-		s.handleFuncsPOST[path] = handlerFuncs
 	default:
 		log.Printf("Don't yet handle the HTTP Method '%s'", httpMethod)
 	}
@@ -117,6 +119,9 @@ func (s *handler) HandlerNames() []string {
 
 // ServeHTTP fulfills the http.Handler interface and is used along with http.ListenAndServe
 func (s *handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+	if rw == nil || req == nil || req.URL == nil {
+		return
+	}
 	reqPath := req.URL.Path
 	if s.verbose {
 		log.Printf("Received request for '%s'", reqPath)
@@ -137,6 +142,7 @@ func (s *handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 				if s.verbose {
 					log.Printf("don't have a handler for %s", reqPath)
 				}
+				rw.WriteHeader(http.StatusNotFound)
 				return
 			}
 		}
