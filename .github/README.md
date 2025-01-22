@@ -4,6 +4,12 @@
 
 ---
 
+<div align="center">
+
+[![codecov](https://codecov.io/gh/Tether-Payments/tamarin-mux/graph/badge.svg?token=ZBQI4PN2CA)](https://codecov.io/gh/Tether-Payments/tamarin-mux)
+
+</div>
+
 Written in Go ("Golang" for search engines) with zero external dependencies, this package implements a clean, 
 non-bloated, HTTP request multiplexer.
 
