@@ -8,18 +8,18 @@ import (
 )
 
 func TestNewEndpoint(t *testing.T) {
-	ep := NewEndpoint("", "")
+	ep := NewEndpoint("")
 	if ep == nil || ep.sequence == nil {
 		t.Fail()
 	}
 }
 
 func TestWithHandlers(t *testing.T) {
-	ep := NewEndpoint("", "").WithHandlers(nil)
+	ep := NewEndpoint("").WithHandlers(nil)
 	if ep == nil {
 		t.Fail()
 	}
-	ep = NewEndpoint("", "").WithHandlers(func(w http.ResponseWriter, r *http.Request) *EndpointError { return nil })
+	ep = NewEndpoint("").WithHandlers(func(w http.ResponseWriter, r *http.Request) *EndpointError { return nil })
 	if len(ep.sequence) != 1 {
 		t.Fail()
 	}
@@ -33,7 +33,8 @@ func TestHandle(t *testing.T) {
 	}
 	testLastCode = -1
 	testLastMessage = ""
-	ep := NewEndpoint("/test", http.MethodGet).WithHandlers(testFuncGood)
+	ep := NewEndpoint("/test").WithHandlers(testFuncGood)
+	ep.method = http.MethodGet
 	ep.Handle(testingResponseWriter{}, &http.Request{Method: http.MethodGet, URL: &url.URL{Path: "/test"}})
 	if testLastCode != 999 || testLastMessage != "passed" {
 		t.Fail()
@@ -43,7 +44,8 @@ func TestHandle(t *testing.T) {
 	}
 	testLastCode = -1
 	testLastMessage = ""
-	ep = NewEndpoint("/test", http.MethodGet).WithHandlers(testFuncBad)
+	ep = NewEndpoint("/test").WithHandlers(testFuncBad)
+	ep.method = http.MethodGet
 	ep.Handle(testingResponseWriter{}, &http.Request{Method: http.MethodGet, URL: &url.URL{Path: "/test"}})
 	if testLastCode != -666 || testLastMessage != "you are a bad person" {
 		t.Fail()

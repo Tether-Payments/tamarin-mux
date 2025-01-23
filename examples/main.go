@@ -14,14 +14,14 @@ var port int
 
 func main() {
 	handler := tamarin.NewHandler(true).
-		WithEndpoint(tamarin.NewEndpoint("/fancyping", http.MethodPost).WithHandlers(implementation.MustHaveHelloGoodbyeHeader, implementation.EndpointPingPOST)).
+		WithPostEndpoint(tamarin.NewEndpoint("/fancyping").WithHandlers(implementation.MustHaveHelloGoodbyeHeader, implementation.EndpointPingPOST)).
 		WithHandleFuncs("/ping", http.MethodGet, implementation.PingGET).
 		WithHandleFuncs("/ping", http.MethodPost, implementation.PingPOST).
-		WithEndpoint(tamarin.NewEndpoint("/wallet/{}", http.MethodGet).WithHandlers(implementation.MustHaveHelloGoodbyeHeader, implementation.PrintURLWithElements)).
-		WithEndpoint(tamarin.NewEndpoint("/wallet/{}/something/{}/else", http.MethodGet).WithHandlers(implementation.PrintURLWithElements)).
-		WithEndpoint(tamarin.NewEndpoint("/failjson", http.MethodPost).WithHandlers(implementation.FailIfNoBody, implementation.ShowBody)).
-		WithEndpoint(tamarin.NewEndpoint("/content/{*}", http.MethodPost).WithHandlers(implementation.MustHaveHelloGoodbyeHeader, implementation.StaticSiteHandler)).
-		WithEndpoint(tamarin.NewEndpoint("/content/{*}", http.MethodGet).WithHandlers(implementation.StaticSiteHandler))
+		WithGetEndpoint(tamarin.NewEndpoint("/wallet/{}").WithHandlers(implementation.MustHaveHelloGoodbyeHeader, implementation.PrintURLWithElements)).
+		WithGetEndpoint(tamarin.NewEndpoint("/wallet/{}/something/{}/else").WithHandlers(implementation.PrintURLWithElements)).
+		WithPostEndpoint(tamarin.NewEndpoint("/failjson").WithHandlers(implementation.FailIfNoBody, implementation.ShowBody)).
+		WithPostEndpoint(tamarin.NewEndpoint("/content/{*}").WithHandlers(implementation.MustHaveHelloGoodbyeHeader, implementation.StaticSiteHandler)).
+		WithGetEndpoint(tamarin.NewEndpoint("/content/{*}").WithHandlers(implementation.StaticSiteHandler))
 
 	addr := fmt.Sprintf("0.0.0.0:%d", port)
 

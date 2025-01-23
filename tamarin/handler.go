@@ -36,9 +36,9 @@ func NewHandler(verbose bool) *handler {
 	}
 }
 
-// WithEndpoint adds an Endpoint (HandlerFunc wrapper) to the list of HandlerFuncs to be
+// withEndpoint adds an Endpoint (HandlerFunc wrapper) to the list of HandlerFuncs to be
 // executed for a given path and method
-func (s *handler) WithEndpoint(e *endpoint) *handler {
+func (s *handler) withEndpoint(e *endpoint) *handler {
 	if e == nil {
 		return s
 	}
@@ -64,6 +64,24 @@ func (s *handler) WithEndpoint(e *endpoint) *handler {
 	}
 
 	return s
+}
+
+// WithGetEndpoint adds a GET endpoint to the list of endpoints served
+func (s *handler) WithGetEndpoint(e *endpoint) *handler {
+	if e == nil {
+		return s
+	}
+	e.method = http.MethodGet
+	return s.withEndpoint(e)
+}
+
+// WithGetEndpoint adds a POST endpoint to the list of endpoints served
+func (s *handler) WithPostEndpoint(e *endpoint) *handler {
+	if e == nil {
+		return s
+	}
+	e.method = http.MethodPost
+	return s.withEndpoint(e)
 }
 
 // WithEndpoint adds HandlerFuncs to the list of HandlerFuncs to be
