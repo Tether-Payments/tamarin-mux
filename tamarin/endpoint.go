@@ -15,8 +15,14 @@ type endpoint struct {
 }
 
 // NewEndpoint returns an instantiated Endpoint
-func NewEndpoint(path, httpMethod string) *endpoint {
-	return &endpoint{sequence: []EndpointHandlerFunc{}, path: path, method: httpMethod}
+func NewEndpoint(path string) *endpoint {
+	return &endpoint{sequence: []EndpointHandlerFunc{}, path: path}
+}
+
+// WithMethod adds the HTTP Method (GET/POST) to the endpoint
+func (e *endpoint) WithMethod(httpMethod string) *endpoint {
+	e.method = httpMethod
+	return e
 }
 
 // WithHandlers adds EndpointHandlerFunc's to the sequence of HandlerFuncs to be

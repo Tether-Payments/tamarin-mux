@@ -16,40 +16,40 @@ func TestNewHandler(t *testing.T) {
 }
 
 func TestWithEndpoint(t *testing.T) {
-	h := NewHandler(false).WithEndpoint(nil)
+	h := NewHandler(false).withEndpoint(nil)
 	if h == nil {
 		t.Fail()
 	}
-	h = h.WithEndpoint(&endpoint{})
+	h = h.withEndpoint(&endpoint{})
 	if h == nil {
 		t.Fail()
 	}
-	h = h.WithEndpoint(&endpoint{method: http.MethodGet})
+	h = h.withEndpoint(&endpoint{method: http.MethodGet})
 	if h == nil {
 		t.Fail()
 	}
 	testFunc := func(http.ResponseWriter, *http.Request) *EndpointError { return nil }
-	h = h.WithEndpoint(&endpoint{method: http.MethodGet, sequence: []EndpointHandlerFunc{testFunc}})
+	h = h.withEndpoint(&endpoint{method: http.MethodGet, sequence: []EndpointHandlerFunc{testFunc}})
 	if len(h.handleFuncsGET) != 1 {
 		t.Fail()
 	}
-	h = h.WithEndpoint(&endpoint{method: http.MethodGet, path: "/{}", sequence: []EndpointHandlerFunc{testFunc}})
+	h = h.withEndpoint(&endpoint{method: http.MethodGet, path: "/{}", sequence: []EndpointHandlerFunc{testFunc}})
 	if len(h.variableHandlersGET) != 1 {
 		t.Fail()
 	}
-	h = h.WithEndpoint(&endpoint{method: http.MethodGet, path: "/{*}", sequence: []EndpointHandlerFunc{testFunc}})
+	h = h.withEndpoint(&endpoint{method: http.MethodGet, path: "/{*}", sequence: []EndpointHandlerFunc{testFunc}})
 	if len(h.staticHandlersGET) != 1 {
 		t.Fail()
 	}
-	h = h.WithEndpoint(&endpoint{method: http.MethodPost, sequence: []EndpointHandlerFunc{testFunc}})
+	h = h.withEndpoint(&endpoint{method: http.MethodPost, sequence: []EndpointHandlerFunc{testFunc}})
 	if len(h.handleFuncsPOST) != 1 {
 		t.Fail()
 	}
-	h = h.WithEndpoint(&endpoint{method: http.MethodPost, path: "/{}", sequence: []EndpointHandlerFunc{testFunc}})
+	h = h.withEndpoint(&endpoint{method: http.MethodPost, path: "/{}", sequence: []EndpointHandlerFunc{testFunc}})
 	if len(h.variableHandlersPOST) != 1 {
 		t.Fail()
 	}
-	h = h.WithEndpoint(&endpoint{method: http.MethodPost, path: "/{*}", sequence: []EndpointHandlerFunc{testFunc}})
+	h = h.withEndpoint(&endpoint{method: http.MethodPost, path: "/{*}", sequence: []EndpointHandlerFunc{testFunc}})
 	if len(h.staticHandlersPOST) != 1 {
 		t.Fail()
 	}
