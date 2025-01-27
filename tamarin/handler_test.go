@@ -55,6 +55,30 @@ func TestWithEndpoint(t *testing.T) {
 	}
 }
 
+func TestWithGetEndpoint(t *testing.T) {
+	testFunc := func(http.ResponseWriter, *http.Request) *EndpointError { return nil }
+	h := NewHandler(true).WithGetEndpoint(NewEndpoint("").WithHandlers(testFunc))
+	if len(h.handleFuncsGET) != 1 {
+		t.Fail()
+	}
+	h = NewHandler(true).WithGetEndpoint(nil)
+	if len(h.handleFuncsGET) != 0 {
+		t.Fail()
+	}
+}
+
+func TestWithPostEndpoint(t *testing.T) {
+	testFunc := func(http.ResponseWriter, *http.Request) *EndpointError { return nil }
+	h := NewHandler(true).WithPostEndpoint(NewEndpoint("").WithHandlers(testFunc))
+	if len(h.handleFuncsPOST) != 1 {
+		t.Fail()
+	}
+	h = NewHandler(true).WithPostEndpoint(nil)
+	if len(h.handleFuncsPOST) != 0 {
+		t.Fail()
+	}
+}
+
 func TestWithHandleFuncs(t *testing.T) {
 	h := NewHandler(false).WithHandleFuncs("", "", nil)
 	if h == nil {

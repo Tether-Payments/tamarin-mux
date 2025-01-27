@@ -14,6 +14,13 @@ func TestNewEndpoint(t *testing.T) {
 	}
 }
 
+func TestWithMethod(t *testing.T) {
+	ep := NewEndpoint("").WithMethod(http.MethodGet)
+	if ep.method != http.MethodGet {
+		t.Fail()
+	}
+}
+
 func TestWithHandlers(t *testing.T) {
 	ep := NewEndpoint("").WithHandlers(nil)
 	if ep == nil {
