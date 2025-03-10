@@ -271,6 +271,40 @@ func TestVariablePrefix(t *testing.T) {
 	}
 }
 
+func TestPost(t *testing.T) {
+	m := NewHandler(false)
+	m.Post("/test1", func(w http.ResponseWriter, r *http.Request) *EndpointError { return nil })
+	if len(m.handleFuncsPOST) != 1 {
+		t.Fail()
+	}
+}
+
+func TestPostF(t *testing.T) {
+	m := NewHandler(false).
+		PostF("/test1", func(w http.ResponseWriter, r *http.Request) {}).
+		PostF("/test2/{}", func(w http.ResponseWriter, r *http.Request) {}).
+		PostF("/test3/{*}", func(w http.ResponseWriter, r *http.Request) {})
+	if len(m.handleFuncsPOST) != 1 || len(m.variableHandlersPOST) != 1 || len(m.staticHandlersPOST) != 1 {
+		t.Fail()
+	}
+}
+func TestGet(t *testing.T) {
+	m := NewHandler(false)
+	m.Get("/test1", func(w http.ResponseWriter, r *http.Request) *EndpointError { return nil })
+	if len(m.handleFuncsGET) != 1 {
+		t.Fail()
+	}
+}
+func TestGetF(t *testing.T) {
+	m := NewHandler(false)
+	m.GetF("/test1", func(w http.ResponseWriter, r *http.Request) {})
+	m.GetF("/test2/{}", func(w http.ResponseWriter, r *http.Request) {})
+	m.GetF("/test3/{*}", func(w http.ResponseWriter, r *http.Request) {})
+	if len(m.handleFuncsGET) != 1 || len(m.variableHandlersGET) != 1 || len(m.staticHandlersGET) != 1 {
+		t.Fail()
+	}
+}
+
 var (
 	testLastMessage string
 	testLastCode    int
