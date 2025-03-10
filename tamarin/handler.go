@@ -36,6 +36,40 @@ func NewHandler(verbose bool) *handler {
 	}
 }
 
+// Post builds a POST endpoint and adds it to the list of sequences
+func (h *handler) Post(path string, handlers ...EndpointHandlerFunc) *handler {
+	return h.withEndpoint(NewEndpoint(path).WithHandlers(handlers...).WithMethod(http.MethodPost))
+}
+
+// Get builds a GET endpoint and adds it to the list of sequences
+func (h *handler) Get(path string, handlers ...EndpointHandlerFunc) *handler {
+	return h.withEndpoint(NewEndpoint(path).WithHandlers(handlers...).WithMethod(http.MethodGet))
+}
+
+// PostF adds a POST handler to the list of sequences
+func (h *handler) PostF(path string, handlers ...http.HandlerFunc) *handler {
+	if pathIsVariable(path) {
+		h.variableHandlersPOST[path] = handlers
+	} else if pathIsStatic(path) {
+		h.staticHandlersPOST[path] = handlers
+	} else {
+		h.handleFuncsPOST[path] = handlers
+	}
+	return h
+}
+
+// GetF adds a GET handler to the list of sequences
+func (h *handler) GetF(path string, handlers ...http.HandlerFunc) *handler {
+	if pathIsVariable(path) {
+		h.variableHandlersGET[path] = handlers
+	} else if pathIsStatic(path) {
+		h.staticHandlersGET[path] = handlers
+	} else {
+		h.handleFuncsGET[path] = handlers
+	}
+	return h
+}
+
 // withEndpoint adds an Endpoint (HandlerFunc wrapper) to the list of HandlerFuncs to be
 // executed for a given path and method
 func (s *handler) withEndpoint(e *endpoint) *handler {
