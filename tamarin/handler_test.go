@@ -53,6 +53,18 @@ func TestWithEndpoint(t *testing.T) {
 	if len(h.staticHandlersPOST) != 1 {
 		t.Fail()
 	}
+	h = h.withEndpoint(&endpoint{method: http.MethodPatch, sequence: []EndpointHandlerFunc{testFunc}})
+	if len(h.handleFuncsPATCH) != 1 {
+		t.Fail()
+	}
+	h = h.withEndpoint(&endpoint{method: http.MethodPatch, path: "/{}", sequence: []EndpointHandlerFunc{testFunc}})
+	if len(h.variableHandlersPATCH) != 1 {
+		t.Fail()
+	}
+	h = h.withEndpoint(&endpoint{method: http.MethodPatch, path: "/{*}", sequence: []EndpointHandlerFunc{testFunc}})
+	if len(h.staticHandlersPATCH) != 1 {
+		t.Fail()
+	}
 }
 
 func TestWithGetEndpoint(t *testing.T) {
@@ -75,6 +87,18 @@ func TestWithPostEndpoint(t *testing.T) {
 	}
 	h = NewHandler(true).WithPostEndpoint(nil)
 	if len(h.handleFuncsPOST) != 0 {
+		t.Fail()
+	}
+}
+
+func TestWithPatchEndpoint(t *testing.T) {
+	testFunc := func(http.ResponseWriter, *http.Request) *EndpointError { return nil }
+	h := NewHandler(true).WithPatchEndpoint(NewEndpoint("").WithHandlers(testFunc))
+	if len(h.handleFuncsPATCH) != 1 {
+		t.Fail()
+	}
+	h = NewHandler(true).WithPatchEndpoint(nil)
+	if len(h.handleFuncsPATCH) != 0 {
 		t.Fail()
 	}
 }
@@ -113,6 +137,18 @@ func TestWithHandleFuncs(t *testing.T) {
 	if len(h.staticHandlersPOST) != 1 {
 		t.Fail()
 	}
+	h = h.WithHandleFuncs("", http.MethodPatch, testFunc)
+	if len(h.handleFuncsPATCH) != 1 {
+		t.Fail()
+	}
+	h = h.WithHandleFuncs("{}", http.MethodPatch, testFunc)
+	if len(h.variableHandlersPATCH) != 1 {
+		t.Fail()
+	}
+	h = h.WithHandleFuncs("{*}", http.MethodPatch, testFunc)
+	if len(h.staticHandlersPATCH) != 1 {
+		t.Fail()
+	}
 }
 
 func TestHandlerNames(t *testing.T) {
@@ -123,9 +159,12 @@ func TestHandlerNames(t *testing.T) {
 		WithHandleFuncs("/pathC/{*}", http.MethodGet, testFunc).
 		WithHandleFuncs("/pathD/", http.MethodPost, testFunc).
 		WithHandleFuncs("/pathE/{}", http.MethodPost, testFunc).
-		WithHandleFuncs("/pathF/{*}", http.MethodPost, testFunc)
+		WithHandleFuncs("/pathF/{*}", http.MethodPost, testFunc).
+		WithHandleFuncs("/pathG/", http.MethodPatch, testFunc).
+		WithHandleFuncs("/pathH/{}", http.MethodPatch, testFunc).
+		WithHandleFuncs("/pathI/{*}", http.MethodPatch, testFunc)
 	names := h.HandlerNames()
-	if len(names) != 6 {
+	if len(names) != 9 {
 		t.Fail()
 	}
 	if !strings.Contains(names[0], "/pathA") || !strings.Contains(names[0], http.MethodGet) {
@@ -144,6 +183,15 @@ func TestHandlerNames(t *testing.T) {
 		t.Fail()
 	}
 	if !strings.Contains(names[5], "/pathF") || !strings.Contains(names[5], http.MethodPost) {
+		t.Fail()
+	}
+	if !strings.Contains(names[6], "/pathG") || !strings.Contains(names[6], http.MethodPatch) {
+		t.Fail()
+	}
+	if !strings.Contains(names[7], "/pathH") || !strings.Contains(names[7], http.MethodPatch) {
+		t.Fail()
+	}
+	if !strings.Contains(names[8], "/pathI") || !strings.Contains(names[8], http.MethodPatch) {
 		t.Fail()
 	}
 }
@@ -189,6 +237,17 @@ func TestServeHTTP(t *testing.T) {
 		t.Fail()
 	}
 	fmt.Println(testLastMessage, testLastCode)
+	h.WithHandleFuncs("/test", http.MethodPatch, testFunc)
+	testLastCode = -1
+	testLastMessage = ""
+	h.ServeHTTP(trw, &http.Request{URL: &url.URL{Path: "/test"}, Method: http.MethodPatch})
+	if testLastCode != goodStatus {
+		t.Fail()
+	}
+	if testLastMessage != goodMessage {
+		t.Fail()
+	}
+	fmt.Println(testLastMessage, testLastCode)
 }
 
 func TestGetVariableHandlerFuncsForPattern(t *testing.T) {
@@ -211,6 +270,11 @@ func TestGetVariableHandlerFuncsForPattern(t *testing.T) {
 	}
 	h = NewHandler(true).WithHandleFuncs("/test/{}/something/else/{}/", http.MethodGet, testFunc).WithHandleFuncs("/test/{}", http.MethodGet, testFunc)
 	h.ServeHTTP(testingResponseWriter{}, &http.Request{Method: http.MethodGet, URL: &url.URL{Path: "/test/anotherword"}})
+	if testLastMessage != goodMessage || testLastCode != goodStatus {
+		t.Fail()
+	}
+	h = NewHandler(true).WithHandleFuncs("/test/{}/something/else/{}/", http.MethodGet, testFunc).WithHandleFuncs("/test/{}", http.MethodPatch, testFunc)
+	h.ServeHTTP(testingResponseWriter{}, &http.Request{Method: http.MethodPatch, URL: &url.URL{Path: "/test/anotherword"}})
 	if testLastMessage != goodMessage || testLastCode != goodStatus {
 		t.Fail()
 	}
@@ -237,6 +301,11 @@ func TestGetStaticVariableHandlerFuncsForPattern(t *testing.T) {
 	}
 	h = NewHandler(true).WithHandleFuncs("/test/something/else/{*}/", http.MethodGet, testFunc).WithHandleFuncs("/test/{*}", http.MethodGet, testFunc)
 	h.ServeHTTP(testingResponseWriter{}, &http.Request{Method: http.MethodGet, URL: &url.URL{Path: "/test/myfile.json"}})
+	if testLastMessage != goodMessage || testLastCode != goodStatus {
+		t.Fail()
+	}
+	h = NewHandler(true).WithHandleFuncs("/test/something/else/{*}/", http.MethodPatch, testFunc).WithHandleFuncs("/test/{*}", http.MethodPatch, testFunc)
+	h.ServeHTTP(testingResponseWriter{}, &http.Request{Method: http.MethodPatch, URL: &url.URL{Path: "/test/myfile.json"}})
 	if testLastMessage != goodMessage || testLastCode != goodStatus {
 		t.Fail()
 	}
@@ -301,6 +370,22 @@ func TestGetF(t *testing.T) {
 	m.GetF("/test2/{}", func(w http.ResponseWriter, r *http.Request) {})
 	m.GetF("/test3/{*}", func(w http.ResponseWriter, r *http.Request) {})
 	if len(m.handleFuncsGET) != 1 || len(m.variableHandlersGET) != 1 || len(m.staticHandlersGET) != 1 {
+		t.Fail()
+	}
+}
+func TestPatch(t *testing.T) {
+	m := NewHandler(false)
+	m.Patch("/test1", func(w http.ResponseWriter, r *http.Request) *EndpointError { return nil })
+	if len(m.handleFuncsPATCH) != 1 {
+		t.Fail()
+	}
+}
+func TestPatchF(t *testing.T) {
+	m := NewHandler(false)
+	m.PatchF("/test1", func(w http.ResponseWriter, r *http.Request) {})
+	m.PatchF("/test2/{}", func(w http.ResponseWriter, r *http.Request) {})
+	m.PatchF("/test3/{*}", func(w http.ResponseWriter, r *http.Request) {})
+	if len(m.handleFuncsPATCH) != 1 || len(m.variableHandlersPATCH) != 1 || len(m.staticHandlersPATCH) != 1 {
 		t.Fail()
 	}
 }
