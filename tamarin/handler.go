@@ -13,26 +13,32 @@ const (
 )
 
 type handler struct {
-	verbose              bool
-	handleFuncsGET       map[string][]http.HandlerFunc
-	handleFuncsPOST      map[string][]http.HandlerFunc
-	variableHandlersGET  map[string][]http.HandlerFunc
-	variableHandlersPOST map[string][]http.HandlerFunc
-	staticHandlersGET    map[string][]http.HandlerFunc
-	staticHandlersPOST   map[string][]http.HandlerFunc
+	verbose               bool
+	handleFuncsGET        map[string][]http.HandlerFunc
+	handleFuncsPOST       map[string][]http.HandlerFunc
+	handleFuncsPATCH      map[string][]http.HandlerFunc
+	variableHandlersGET   map[string][]http.HandlerFunc
+	variableHandlersPOST  map[string][]http.HandlerFunc
+	variableHandlersPATCH map[string][]http.HandlerFunc
+	staticHandlersGET     map[string][]http.HandlerFunc
+	staticHandlersPOST    map[string][]http.HandlerFunc
+	staticHandlersPATCH   map[string][]http.HandlerFunc
 }
 
 // NewHandler returns a fresh Handler / Mux.
 // The verbose parameter controls log output
 func NewHandler(verbose bool) *handler {
 	return &handler{
-		verbose:              verbose,
-		handleFuncsGET:       make(map[string][]http.HandlerFunc),
-		handleFuncsPOST:      make(map[string][]http.HandlerFunc),
-		variableHandlersGET:  make(map[string][]http.HandlerFunc),
-		variableHandlersPOST: make(map[string][]http.HandlerFunc),
-		staticHandlersGET:    make(map[string][]http.HandlerFunc),
-		staticHandlersPOST:   make(map[string][]http.HandlerFunc),
+		verbose:               verbose,
+		handleFuncsGET:        make(map[string][]http.HandlerFunc),
+		handleFuncsPOST:       make(map[string][]http.HandlerFunc),
+		variableHandlersGET:   make(map[string][]http.HandlerFunc),
+		variableHandlersPOST:  make(map[string][]http.HandlerFunc),
+		staticHandlersGET:     make(map[string][]http.HandlerFunc),
+		staticHandlersPOST:    make(map[string][]http.HandlerFunc),
+		handleFuncsPATCH:      make(map[string][]http.HandlerFunc),
+		variableHandlersPATCH: make(map[string][]http.HandlerFunc),
+		staticHandlersPATCH:   make(map[string][]http.HandlerFunc),
 	}
 }
 
@@ -44,6 +50,11 @@ func (h *handler) Post(path string, handlers ...EndpointHandlerFunc) *handler {
 // Get builds a GET endpoint and adds it to the list of sequences
 func (h *handler) Get(path string, handlers ...EndpointHandlerFunc) *handler {
 	return h.withEndpoint(NewEndpoint(path).WithHandlers(handlers...).WithMethod(http.MethodGet))
+}
+
+// Patch builds a PATCH endpoint and adds it to the list of sequences
+func (h *handler) Patch(path string, handlers ...EndpointHandlerFunc) *handler {
+	return h.withEndpoint(NewEndpoint(path).WithHandlers(handlers...).WithMethod(http.MethodPatch))
 }
 
 // PostF adds a POST handler to the list of sequences
@@ -66,6 +77,18 @@ func (h *handler) GetF(path string, handlers ...http.HandlerFunc) *handler {
 		h.staticHandlersGET[path] = handlers
 	} else {
 		h.handleFuncsGET[path] = handlers
+	}
+	return h
+}
+
+// PatchF adds a GET handler to the list of sequences
+func (h *handler) PatchF(path string, handlers ...http.HandlerFunc) *handler {
+	if pathIsVariable(path) {
+		h.variableHandlersPATCH[path] = handlers
+	} else if pathIsStatic(path) {
+		h.staticHandlersPATCH[path] = handlers
+	} else {
+		h.handleFuncsPATCH[path] = handlers
 	}
 	return h
 }
@@ -93,6 +116,14 @@ func (s *handler) withEndpoint(e *endpoint) *handler {
 		} else {
 			s.handleFuncsPOST[e.path] = []http.HandlerFunc{e.Handle}
 		}
+	case http.MethodPatch:
+		if pathIsVariable(e.path) {
+			s.variableHandlersPATCH[e.path] = []http.HandlerFunc{e.Handle}
+		} else if pathIsStatic(e.path) {
+			s.staticHandlersPATCH[e.path] = []http.HandlerFunc{e.Handle}
+		} else {
+			s.handleFuncsPATCH[e.path] = []http.HandlerFunc{e.Handle}
+		}
 	default:
 		log.Printf("Don't yet handle the HTTP Method '%s'", e.method)
 	}
@@ -118,6 +149,15 @@ func (s *handler) WithPostEndpoint(e *endpoint) *handler {
 	return s.withEndpoint(e)
 }
 
+// WithPatchEndpoint adds a POST endpoint to the list of endpoints served
+func (s *handler) WithPatchEndpoint(e *endpoint) *handler {
+	if e == nil {
+		return s
+	}
+	e.method = http.MethodPatch
+	return s.withEndpoint(e)
+}
+
 // WithEndpoint adds HandlerFuncs to the list of HandlerFuncs to be
 // executed for a given path and method
 func (s *handler) WithHandleFuncs(path, httpMethod string, handlerFuncs ...http.HandlerFunc) *handler {
@@ -137,6 +177,14 @@ func (s *handler) WithHandleFuncs(path, httpMethod string, handlerFuncs ...http.
 			s.staticHandlersPOST[path] = handlerFuncs
 		} else {
 			s.handleFuncsPOST[path] = handlerFuncs
+		}
+	case http.MethodPatch:
+		if pathIsVariable(path) {
+			s.variableHandlersPATCH[path] = handlerFuncs
+		} else if pathIsStatic(path) {
+			s.staticHandlersPATCH[path] = handlerFuncs
+		} else {
+			s.handleFuncsPATCH[path] = handlerFuncs
 		}
 	default:
 		log.Printf("Don't yet handle the HTTP Method '%s'", httpMethod)
@@ -166,6 +214,15 @@ func (s *handler) HandlerNames() []string {
 	for key := range s.staticHandlersPOST {
 		names = append(names, fmt.Sprintf("[%s] [URL refers to static content] -> %s ", http.MethodPost, key))
 	}
+	for key := range s.handleFuncsPATCH {
+		names = append(names, fmt.Sprintf("[%s]                                -> %s", http.MethodPatch, key))
+	}
+	for key := range s.variableHandlersPATCH {
+		names = append(names, fmt.Sprintf("[%s] [URL contains variable]        -> %s ", http.MethodPatch, key))
+	}
+	for key := range s.staticHandlersPATCH {
+		names = append(names, fmt.Sprintf("[%s] [URL refers to static content] -> %s ", http.MethodPatch, key))
+	}
 	return names
 }
 
@@ -185,6 +242,8 @@ func (s *handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		endpoints, OK = s.handleFuncsGET[reqPath]
 	case http.MethodPost:
 		endpoints, OK = s.handleFuncsPOST[reqPath]
+	case http.MethodPatch:
+		endpoints, OK = s.handleFuncsPATCH[reqPath]
 	}
 	if !OK {
 		endpoints = s.getVariableHandlerFuncsForPattern(req.URL.Path, req.Method)
@@ -222,6 +281,8 @@ func (h *handler) getVariableHandlerFuncsForPattern(path, httpMethod string) []h
 		candidateFuncs = h.variableHandlersGET
 	case http.MethodPost:
 		candidateFuncs = h.variableHandlersPOST
+	case http.MethodPatch:
+		candidateFuncs = h.variableHandlersPATCH
 	default:
 		return nil
 	}
@@ -258,6 +319,8 @@ func (h *handler) getStaticHandlerFuncsForPattern(path, httpMethod string) []htt
 		candidateFuncs = h.staticHandlersGET
 	case http.MethodPost:
 		candidateFuncs = h.staticHandlersPOST
+	case http.MethodPatch:
+		candidateFuncs = h.staticHandlersPATCH
 	default:
 		return nil
 	}
