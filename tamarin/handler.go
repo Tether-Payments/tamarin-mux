@@ -186,6 +186,8 @@ func (s *handler) WithHandleFuncs(path, httpMethod string, handlerFuncs ...http.
 		} else {
 			s.handleFuncsPATCH[path] = handlerFuncs
 		}
+	case http.MethodOptions:
+
 	default:
 		log.Printf("Don't yet handle the HTTP Method '%s'", httpMethod)
 	}
@@ -231,6 +233,13 @@ func (s *handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	if rw == nil || req == nil || req.URL == nil {
 		return
 	}
+
+	// Temporary CORS passthrough
+	if req.Method == http.MethodOptions {
+		handleOptions(rw, req)
+		return
+	}
+
 	reqPath := req.URL.Path
 	if s.verbose {
 		log.Printf("Received request for '%s'", reqPath)
@@ -334,6 +343,13 @@ func (h *handler) getStaticHandlerFuncsForPattern(path, httpMethod string) []htt
 		}
 	}
 	return nil
+}
+
+func handleOptions(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func staticPrefix(input string) string {
