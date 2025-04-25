@@ -234,11 +234,17 @@ func (s *handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	// TODO: make this customizable and more locked down
 	// Temporary CORS passthrough
 	if req.Method == http.MethodOptions {
 		handleOptions(rw, req)
 		return
 	}
+
+	// Set open CORS on all other requests
+	rw.Header().Set("Access-Control-Allow-Origin", "*")
+	rw.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE")
+	rw.Header().Set("Access-Control-Allow-Headers", "*")
 
 	reqPath := req.URL.Path
 	if s.verbose {
