@@ -1,3 +1,3 @@
-module github.com/Tether-Payments/tamarin-mux
+module github.com/tetherpay/tamarin-mux
 
 go 1.23.4
