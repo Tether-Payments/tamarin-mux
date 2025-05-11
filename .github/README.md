@@ -91,7 +91,7 @@ func middleWare1(rw http.ResponseWriter, req *http.Request) *tamarin.EndpointErr
 	if !OK {
 		return tamarin.FailWithErrorMessage(
 			http.StatusBadRequest,
-			"malfored header",
+			"malformed header",
 			fmt.Errorf("Header missing goodGuyKey '%s'", goodGuyKey))
 	}
 	if len(goodGuy) != 1 || !strings.EqualFold(goodGuy[0], "yes") {
