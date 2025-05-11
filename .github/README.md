@@ -11,8 +11,8 @@
 <div align="center">
 
 [![Go Report Card](https://goreportcard.com/badge/tetherpay/tamarin-mux)](https://goreportcard.com/report/tetherpay/tamarin-mux)
-[![codecov](https://codecov.io/gh/Tether-Payments/tamarin-mux/graph/badge.svg?token=ZBQI4PN2CA)](https://codecov.io/gh/Tether-Payments/tamarin-mux)
-[![Maintainability](https://api.codeclimate.com/v1/badges/0221a6290e3ca9fca370/maintainability)](https://codeclimate.com/github/Tether-Payments/tamarin-mux/maintainability)
+[![Maintainability](https://qlty.sh/badges/1ae172fe-acf4-4764-b4ae-ebcc6f88ca38/maintainability.svg)](https://qlty.sh/gh/tetherpay/projects/tamarin-mux)
+[![Code Coverage](https://qlty.sh/badges/1ae172fe-acf4-4764-b4ae-ebcc6f88ca38/test_coverage.svg)](https://qlty.sh/gh/tetherpay/projects/tamarin-mux)
 [![CodeQL](https://github.com/tetherpay/tamarin-mux/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/tetherpay/tamarin-mux/actions/workflows/github-code-scanning/codeql)
 
 </div>
@@ -26,14 +26,14 @@ non-bloated, HTTP request multiplexer.
 1. Once confirming you have [Go](https://go.dev/doc/install) installed, the command below will add
    `tamarin` as a dependency to your Go program.
 ```bash
-go get -u github.com/tether-payments/tamarin-mux
+go get -u github.com/tetherpay/tamarin-mux
 ```
 2. Import the package into your code
 ```go
 package main
 
 import (
-   "github.com/Tether-Payments/tamarin-mux"
+   "github.com/tetherpay/tamarin-mux"
 )
 ```
 3. Examples
@@ -44,7 +44,7 @@ package main
 
 import (
 	"net/http"
-	"github.com/Tether-Payments/tamarin-mux/tamarin"
+	"github.com/tetherpay/tamarin-mux/tamarin"
 )
 
 func main() {
@@ -69,7 +69,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/Tether-Payments/tamarin-mux/tamarin"
+	"github.com/tetherpay/tamarin-mux/tamarin"
 )
 
 const goodGuyKey = "X-I-Am-A-Good-Guy"
