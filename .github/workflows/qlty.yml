@@ -3,6 +3,9 @@ name: Run tests and upload coverage
 on:
   push
 
+permissions:
+  contents: read
+
 jobs:
   test:
     name: Run tests and collect coverage
@@ -15,7 +18,8 @@ jobs:
 
       - name: Set up Go
         uses: actions/setup-go@v5.5.0
-
+        with:
+          go-version: 1.24.3
 
       - name: Install dependencies
         run: go mod download
@@ -23,7 +27,7 @@ jobs:
       - name: Run tests
         run: go test ./... -coverprofile=coverage.out
 
-      - uses: qltysh/qlty-action/coverage@v1
+      - uses: qltysh/qlty-action/coverage@v1.0.0
         with:
           token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
           files: coverage.out
