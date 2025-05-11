@@ -16,13 +16,14 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5.5.0
 
+
       - name: Install dependencies
         run: go mod download
 
       - name: Run tests
-        run: go test ./... -coverprofile=coverage.txt
+        run: go test ./... -coverprofile=coverage.out
 
       - uses: qltysh/qlty-action/coverage@v1
         with:
           token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
-          files: cover.out
+          files: coverage.out
