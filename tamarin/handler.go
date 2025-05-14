@@ -243,7 +243,7 @@ func (s *handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
 	// Set open CORS on all other requests
 	rw.Header().Set("Access-Control-Allow-Origin", "*")
-	rw.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE")
+	rw.Header().Set("Access-Control-Allow-Methods", "GET, POST, PATCH, OPTIONS, PUT, DELETE")
 	rw.Header().Set("Access-Control-Allow-Headers", "*")
 
 	reqPath := req.URL.Path
@@ -353,7 +353,7 @@ func (h *handler) getStaticHandlerFuncsForPattern(path, httpMethod string) []htt
 
 func handleOptions(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PATCH, OPTIONS, PUT, DELETE")
 	w.Header().Set("Access-Control-Allow-Headers", "*")
 	w.WriteHeader(http.StatusNoContent)
 }
