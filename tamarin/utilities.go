@@ -1,6 +1,7 @@
 package tamarin
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -22,17 +23,19 @@ func GetRequestBodyAndHeader(req *http.Request) ([]byte, http.Header, error) {
 	if err != nil {
 		return nil, nil, fmt.Errorf("unable to read request body : %v", err)
 	}
+	req.Body = io.NopCloser(bytes.NewReader(bodyBytes))
 	return bodyBytes, req.Header, nil
 }
 
-func UnmarshallJSONRequestBodyTo[T any](req *http.Request, target T) (*T, error) {
-	body, _, err := GetRequestBodyAndHeader(req)
+func UnmarshallJSONRequestBodyTo[T any](req *http.Request, target T) (*T, http.Header, error) {
+	bodyBytes, header, err := GetRequestBodyAndHeader(req)
 	if err != nil {
-		return nil, fmt.Errorf("invalid request : %v", err)
+		return nil, nil, fmt.Errorf("invalid request : %v", err)
 	}
-	err = json.Unmarshal(body, &target)
+	err = json.Unmarshal(bodyBytes, &target)
 	if err != nil {
-		return nil, fmt.Errorf("unable to unmarshal request body to target type : %v", err)
+		return nil, nil, fmt.Errorf("unable to unmarshal request body to target type : %v", err)
 	}
-	return &target, nil
+	req.Body = io.NopCloser(bytes.NewReader(bodyBytes))
+	return &target, header, nil
 }

@@ -60,15 +60,18 @@ func TestUnmarshallJSONRequestBodyTo(t *testing.T) {
 	}
 	req.Header.Add("B", "C")
 
-	result, err := UnmarshallJSONRequestBodyTo(req, testingStructA{})
+	result, _, err := UnmarshallJSONRequestBodyTo(req, testingStructA{})
 	if err != nil {
+		t.Log("err happy")
 		t.Fail()
 	}
 	if result == nil || result.S != "A" {
+		t.Logf("err result : %v", err)
 		t.Fail()
 	}
-	_, err = UnmarshallJSONRequestBodyTo(req, testingStructB{})
+	_, _, err = UnmarshallJSONRequestBodyTo(req, "")
 	if err == nil {
+		t.Logf("err sad : %v", err)
 		t.Fail()
 	}
 }
