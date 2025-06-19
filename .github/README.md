@@ -10,10 +10,10 @@
 
 <div align="center">
 
-[![Go Report Card](https://goreportcard.com/badge/tetherpay/tamarin-mux)](https://goreportcard.com/report/tetherpay/tamarin-mux)
-[![Maintainability](https://qlty.sh/badges/1ae172fe-acf4-4764-b4ae-ebcc6f88ca38/maintainability.svg)](https://qlty.sh/gh/tetherpay/projects/tamarin-mux)
-[![Code Coverage](https://qlty.sh/badges/1ae172fe-acf4-4764-b4ae-ebcc6f88ca38/test_coverage.svg)](https://qlty.sh/gh/tetherpay/projects/tamarin-mux)
-[![CodeQL](https://github.com/tetherpay/tamarin-mux/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/tetherpay/tamarin-mux/actions/workflows/github-code-scanning/codeql)
+[![Go Report Card](https://goreportcard.com/badge/lydianpay/tamarin-mux)](https://goreportcard.com/report/lydianpay/tamarin-mux)
+[![Maintainability](https://qlty.sh/badges/1ae172fe-acf4-4764-b4ae-ebcc6f88ca38/maintainability.svg)](https://qlty.sh/gh/lydianpay/projects/tamarin-mux)
+[![Code Coverage](https://qlty.sh/badges/1ae172fe-acf4-4764-b4ae-ebcc6f88ca38/test_coverage.svg)](https://qlty.sh/gh/lydianpay/projects/tamarin-mux)
+[![CodeQL](https://github.com/lydianpay/tamarin-mux/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/lydianpay/tamarin-mux/actions/workflows/github-code-scanning/codeql)
 
 </div>
 
@@ -26,14 +26,14 @@ non-bloated, HTTP request multiplexer.
 1. Once confirming you have [Go](https://go.dev/doc/install) installed, the command below will add
    `tamarin` as a dependency to your Go program.
 ```bash
-go get -u github.com/tetherpay/tamarin-mux
+go get -u github.com/lydianpay/tamarin-mux
 ```
 2. Import the package into your code
 ```go
 package main
 
 import (
-   "github.com/tetherpay/tamarin-mux"
+   "github.com/lydianpay/tamarin-mux"
 )
 ```
 3. Examples
@@ -44,7 +44,7 @@ package main
 
 import (
 	"net/http"
-	"github.com/tetherpay/tamarin-mux/tamarin"
+	"github.com/lydianpay/tamarin-mux/tamarin"
 )
 
 func main() {
@@ -69,7 +69,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/tetherpay/tamarin-mux/tamarin"
+	"github.com/lydianpay/tamarin-mux/tamarin"
 )
 
 const goodGuyKey = "X-I-Am-A-Good-Guy"
